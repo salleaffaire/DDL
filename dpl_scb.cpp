@@ -1,16 +1,30 @@
 #include "dpl_seq.hpp"
 #include "dpl_scb.hpp"
 #include "dpl_res.hpp"
+#include "dpl_log.hpp"
 
 CSCB::CSCB() : 
-   mId(0), 
+   mId(0),
+   Run((run_t)0),
+   mName(""),
    mIsRunning(0),
    mpT((std::thread *)0) {
    Init();
 }
 
 CSCB::CSCB(unsigned int id) : 
-   mId(id), 
+   mId(id),
+   Run((run_t)0),
+   mName(""),
+   mIsRunning(0),
+   mpT((std::thread *)0) {
+   Init();
+}
+
+CSCB::CSCB(unsigned int id, std::string name) : 
+   mId(id),
+   Run((run_t)0),
+   mName(name),
    mIsRunning(0),
    mpT((std::thread *)0) {
    Init();
@@ -48,6 +62,10 @@ CSequencer *CSCB::GetSequencer() {
    return mSequencer;
 }
 
+void CSCB::Attach(run_t f) {
+   Run = f;
+}
+
 int CSCB::Wait() {
    mpT->join();
 }
@@ -73,7 +91,7 @@ void CSCB::EventLoop(CSCB *arg) {
       
       if (have_all_resources) {
 	 // Execute SCB's core routine
-	 arg->Run();
+	 if (arg->Run) arg->Run(arg->mDecrement);
       
 	 // Release (Increment) all resources
 	 {

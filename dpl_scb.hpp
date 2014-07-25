@@ -3,6 +3,7 @@
 
 #include <list>
 #include <thread>
+#include <string>
 
 // Forward declarations
 class CResource;
@@ -11,10 +12,14 @@ class CSCB;
 
 class CSCB {
 public:
+   typedef void (*run_t)(std::list<CResource *> &);
+
    CSCB();
 
    CSCB(unsigned int id);
  
+   CSCB(unsigned int id, std::string name); 
+
    virtual ~CSCB();
    
    int Start();
@@ -27,9 +32,15 @@ public:
 
    static CSequencer *GetSequencer();
 
+   void Attach(run_t f);
+
 private:
    // SCB Identifier
    unsigned int mId;
+
+   run_t Run;
+
+   std::string mName;
 
    // SCB State
    volatile unsigned int mIsRunning;
@@ -46,8 +57,6 @@ private:
    static CSequencer *mSequencer;
 
    int Wait();
-
-   virtual void Run() = 0;
 
    static void EventLoop(CSCB *arg);
 

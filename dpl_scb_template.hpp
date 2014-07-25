@@ -5,15 +5,16 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "dpl_seq.hpp"
 
 template <class IN, class OUT>
 class CSCB_Template : public CSCB {
 public:
-   typedef void (*CF)(IN *, OUT *);
-   typedef IN * (*AIF)();
-   typedef OUT * (*AOF)();
+   typedef void (*CF)(std::vector<IN *>, std::vector<OUT *>);
+   typedef std::vector<IN *> (*AIF)();
+   typedef std::vector<OUT *> (*AOF)();
 
    CSCB_Template() : 
       CSCB(), 
@@ -66,16 +67,16 @@ private:
    AOF          mAOF;
 
    virtual void Run() {
-      IN  *pin  = (IN *)0;
-      OUT *pout = (OUT *)0;
+      std::vector<IN *> vec_in  = std::vector<IN *>();
+      std::vector<OUT *> vec_out  = std::vector<OUT *>();
 
       if (mAIF) {
-	 pin = mAIF();
+	 vec_in = mAIF();
       }
       if (mAOF) {
-	 pout = mAOF();
+	 vec_out = mAOF();
       }
-      mF(pin, pout);
+      mF(vec_in, vec_out);
    }
    
 };

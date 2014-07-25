@@ -1,8 +1,10 @@
 #ifndef DPL_RES_HPP___
 #define DPL_RES_HPP___
 
+#include <list>
 #include <string>
 
+#include "dpl_resdata.hpp"
 #include "dpl_log.hpp"
 #include "semaphore.hpp"
 
@@ -21,7 +23,7 @@ public:
       mInitialCount(count),
       mName("") {
    }
-
+   
    CResource(unsigned int count, std::string name) : 
       mSemCount(count),
       mInitialCount(count),
@@ -48,6 +50,10 @@ public:
       return mIsAcquired;
    }
 
+   void Attach(CResourceData *rd) {
+      mRD.push_back(rd);
+   }
+
 private:
 
    Semaphore    mSemCount;
@@ -56,6 +62,8 @@ private:
    std::string  mName;
 
    bool         mIsAcquired;
+
+   std::list<CResourceData *>  mRD;
 };
 
 

@@ -1,11 +1,26 @@
+#include <chrono>
+#include <thread>
+#include <vector>
+
 #include "semaphore.hpp"
 #include "dpl_seq.hpp"
 #include "dpl_res.hpp"
 #include "dpl_scb_dummy.hpp"
 #include "dpl_scb_template.hpp"
+#include "dpl_log.hpp"
 
-void f(int *a, int *b) {
+void RunGo(std::list<CResource *> &res) {
+   std::chrono::milliseconds duration(100);
+   std::this_thread::sleep_for(duration);
+   
+   __log("Go ran once !");
+}
 
+void RunDone(std::list<CResource *> &res) {
+   std::chrono::milliseconds duration(200);
+   std::this_thread::sleep_for(duration);
+   
+   __log("Done ran once !");
 }
 
 int 
@@ -21,13 +36,12 @@ main(int argc, char *argv[])
 #if 1
 
    // Create the Sequencer Controlled Blocks 
-   CSCB_Dummy scb0(0xAAAAAAAA, 100, "Go");
-   CSCB_Dummy scb1(0xBBBBBBBB, 200, "Done");
+   CSCB scb_go(0x00, "Go");
+   CSCB scb_done(0x01, "Done");
 
-   //CSCB_Template<int, int> temp1(0x11111111,
-   //                              "Template 1",
-   //                              [](int *, int *)->void {});
-
+   scb_go.Attach(RunGo);
+   scb_done.Attach(RunDone);
+      
    // Create the resources
    // -------------------------------------------------------------
    CResource go(16, "go");
@@ -38,17 +52,17 @@ main(int argc, char *argv[])
    // Configure the process
    // --------------------------------------
    // [go]
-   // [go_token]   -> scb0 -> [done_token]
-   // [done_token] -> scb1 -> [go_token]
-   //                         [done]
+   // [go_token]   -> scb_go   -> [done_token]
+   // [done_token] -> scb_done -> [go_token]
+   //                             [done]
    // --------------------------------------
-   scb0.WaitOn(&go);
-   scb0.WaitOn(&go_token);
-   scb0.Produce(&done_token);
+   scb_go.WaitOn(&go);
+   scb_go.WaitOn(&go_token);
+   scb_go.Produce(&done_token);
 
-   scb1.WaitOn(&done_token);
-   scb1.Produce(&go_token);
-   scb1.Produce(&done);
+   scb_done.WaitOn(&done_token);
+   scb_done.Produce(&go_token);
+   scb_done.Produce(&done);
 
    // Get access to the sequencer object
    CSequencer *seq = CSCB::GetSequencer();
