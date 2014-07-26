@@ -12,7 +12,15 @@ class CSCB;
 
 class CSCB {
 public:
-   typedef void (*run_t)(std::list<CResource *> &);
+   // Sequencer will be the only one allow to directly control an SCB
+   // through the SCB Control API
+   // Start
+   // Wait
+   // StopAndWait
+   friend class CSequencer;
+
+   // Core Function Type
+   typedef void (*CF_t)(std::list<CResource *> &);
 
    CSCB();
 
@@ -21,28 +29,23 @@ public:
    CSCB(unsigned int id, std::string name); 
 
    virtual ~CSCB();
-   
-   int Start();
-
-   int StopAndWait();
 
    void WaitOn(CResource *res);
    
    void Produce(CResource *res);
 
-   static CSequencer *GetSequencer();
+   void Attach(CF_t f);
 
-   void Attach(run_t f);
+   static CSequencer *GetSequencer();
 
 private:
    // SCB Identifier
    unsigned int mId;
 
-   run_t Run;
-
    std::string mName;
 
-   // SCB State
+   // SCB State variables
+   // -------------------------------------------------------
    volatile unsigned int mIsRunning;
    
    // Thread structures
@@ -53,16 +56,33 @@ private:
    // When done
    std::list<CResource *> mIncrement;
 
+   // Custom Core Function
+   // -------------------------------------------------------
+   CF_t CoreFunction;
+
    // Pointer to a Sequencer object
+   // -------------------------------------------------------
    static CSequencer *mSequencer;
+
+   // SBC Control API
+   // -------------------------------------------------------
+   int Start();
+
+   int StopAndWait();
 
    int Wait();
 
-   static void EventLoop(CSCB *arg);
-
+   // SBC Initialization and Release API 
+   // These functions are called by the constructors and
+   // Destructor respectively
+   // -------------------------------------------------------
    void Init();
 
    void Clean();
+
+   // Common execution loop
+   // -------------------------------------------------------
+   static void EventLoop(CSCB *arg);
 
 };
 

@@ -4,7 +4,6 @@
 #include <list>
 #include <string>
 
-#include "dpl_resdata.hpp"
 #include "dpl_log.hpp"
 #include "semaphore.hpp"
 
@@ -50,10 +49,6 @@ public:
       return mIsAcquired;
    }
 
-   void Attach(CResourceData *rd) {
-      mRD.push_back(rd);
-   }
-
 private:
 
    Semaphore    mSemCount;
@@ -62,8 +57,6 @@ private:
    std::string  mName;
 
    bool         mIsAcquired;
-
-   std::list<CResourceData *>  mRD;
 };
 
 

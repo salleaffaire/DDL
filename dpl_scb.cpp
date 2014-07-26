@@ -5,7 +5,7 @@
 
 CSCB::CSCB() : 
    mId(0),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(""),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -14,7 +14,7 @@ CSCB::CSCB() :
 
 CSCB::CSCB(unsigned int id) : 
    mId(id),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(""),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -23,7 +23,7 @@ CSCB::CSCB(unsigned int id) :
 
 CSCB::CSCB(unsigned int id, std::string name) : 
    mId(id),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(name),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -62,8 +62,8 @@ CSequencer *CSCB::GetSequencer() {
    return mSequencer;
 }
 
-void CSCB::Attach(run_t f) {
-   Run = f;
+void CSCB::Attach(CF_t f) {
+   CoreFunction = f;
 }
 
 int CSCB::Wait() {
@@ -91,7 +91,7 @@ void CSCB::EventLoop(CSCB *arg) {
       
       if (have_all_resources) {
 	 // Execute SCB's core routine
-	 if (arg->Run) arg->Run(arg->mDecrement);
+	 if (arg->CoreFunction) arg->CoreFunction(arg->mDecrement);
       
 	 // Release (Increment) all resources
 	 {
