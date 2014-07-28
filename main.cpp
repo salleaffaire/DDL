@@ -13,14 +13,14 @@ void RunGo(std::list<CResource *> &res) {
    std::chrono::milliseconds duration(100);
    std::this_thread::sleep_for(duration);
    
-   __log("Go ran once !");
+   __log("Go ran once with Res of size " << res.size());
 }
 
 void RunDone(std::list<CResource *> &res) {
    std::chrono::milliseconds duration(200);
    std::this_thread::sleep_for(duration);
    
-   __log("Done ran once !");
+   __log("Done ran once with Res of size " << res.size());
 }
 
 int 
