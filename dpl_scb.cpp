@@ -1,3 +1,23 @@
+//    =======================================================================
+//    DDL is the Data Driven Language and provides a simple framework
+//    to build asynchonous systems
+//    ======================================================================= 
+//    Copyright (C) 2014  Luc Martel
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//    ======================================================================= 
+
 #include "dpl_seq.hpp"
 #include "dpl_scb.hpp"
 #include "dpl_res.hpp"
@@ -5,7 +25,7 @@
 
 CSCB::CSCB() : 
    mId(0),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(""),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -14,7 +34,7 @@ CSCB::CSCB() :
 
 CSCB::CSCB(unsigned int id) : 
    mId(id),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(""),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -23,7 +43,7 @@ CSCB::CSCB(unsigned int id) :
 
 CSCB::CSCB(unsigned int id, std::string name) : 
    mId(id),
-   Run((run_t)0),
+   CoreFunction((CF_t)0),
    mName(name),
    mIsRunning(0),
    mpT((std::thread *)0) {
@@ -62,8 +82,8 @@ CSequencer *CSCB::GetSequencer() {
    return mSequencer;
 }
 
-void CSCB::Attach(run_t f) {
-   Run = f;
+void CSCB::Attach(CF_t f) {
+   CoreFunction = f;
 }
 
 int CSCB::Wait() {
@@ -91,7 +111,7 @@ void CSCB::EventLoop(CSCB *arg) {
       
       if (have_all_resources) {
 	 // Execute SCB's core routine
-	 if (arg->Run) arg->Run(arg->mDecrement);
+	 if (arg->CoreFunction) arg->CoreFunction(arg->mDecrement);
       
 	 // Release (Increment) all resources
 	 {
