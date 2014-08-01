@@ -85,21 +85,29 @@ public:
       mBoundResource((CResource *)0),
       mPhysicalResource((CResourceEnvelop *)0),
       mName(name) {
+      // Init the resource
       Init(mName);
+      
+      // Call verifier
       Warn(mInitialCount, mBoundResource);
    }
 
+   // Logical resource
    CResource(unsigned int count, std::string name, CResource *br) : 
       mSemCount(count),
-      mInitialCount(count),
+      mInitialCount(br->mInitialCount),
       mCurrentIndex(0),
       mBoundResource(br),
       mPhysicalResource((CResourceEnvelop *)0),
       mName(name) {
+      // Init the resource
       Init(mName);
+      
+      // Call verifier
       Warn(mInitialCount, mBoundResource);
-   }  
+   }   
 
+   // Physical resource
    CResource(unsigned int count, std::string name, CResourceEnvelop *re) : 
       mSemCount(count),
       mInitialCount(count),
@@ -109,8 +117,10 @@ public:
       mName(name) {
       // Init the resource
       Init(mName);
+
       // Create the physical resources
       re->Init(count);
+
       // Call verifier
       Warn(mInitialCount, mBoundResource);
    }
