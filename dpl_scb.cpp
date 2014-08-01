@@ -23,6 +23,8 @@
 #include "dpl_res.hpp"
 #include "dpl_log.hpp"
 
+using namespace DDL;
+
 CSCB::CSCB() : 
    mId(0),
    CoreFunction((CF_t)0),

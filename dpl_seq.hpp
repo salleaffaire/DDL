@@ -23,6 +23,8 @@
 
 #include <list>
 
+namespace DDL {
+
 class CSCB;
 
 
@@ -43,5 +45,6 @@ private:
    std::list<CSCB *> mSCBs;
 };
 
+}
 
 #endif

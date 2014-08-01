@@ -25,6 +25,8 @@
 #include <thread>
 #include <string>
 
+namespace DDL {
+
 // Forward declarations
 class CResource;
 class CSequencer;
@@ -106,5 +108,6 @@ private:
 
 };
 
+}
 
 #endif

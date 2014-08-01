@@ -22,21 +22,16 @@
 #include <thread>
 #include <vector>
 
-#include "semaphore.hpp"
-#include "dpl_seq.hpp"
-#include "dpl_res.hpp"
-#include "dpl_scb_dummy.hpp"
-#include "dpl_scb_template.hpp"
-#include "dpl_log.hpp"
+#include "dpl.hpp"
 
-void RunGo(std::list<CResource *> &res) {
+void RunGo(std::list<DDL::CResource *> &res) {
    std::chrono::milliseconds duration(100);
    std::this_thread::sleep_for(duration);
    
    __log("Go ran once with Res of size " << res.size());
 }
 
-void RunDone(std::list<CResource *> &res) {
+void RunDone(std::list<DDL::CResource *> &res) {
    std::chrono::milliseconds duration(200);
    std::this_thread::sleep_for(duration);
    
@@ -46,28 +41,28 @@ void RunDone(std::list<CResource *> &res) {
 int 
 main(int argc, char *argv[])
 {
-   // Test Semaphore
-#if 1
-   Semaphore sem(1); 
-#endif
-
    // Test Sequencer
    // -------------------------------------------------------------
 #if 1
 
+   // Create phiysical memory locations
+   // -------------------------------------------------------------
+   DDL::CResourceEnvelop free_buffer(2);
+
    // Create the Sequencer Controlled Blocks 
-   CSCB scb_go(0x00, "Go");
-   CSCB scb_done(0x01, "Done");
+   DDL::CSCB scb_go(0x00, "Go");
+   DDL::CSCB scb_done(0x01, "Done");
 
    scb_go.Attach(RunGo);
    scb_done.Attach(RunDone);
       
    // Create the resources
    // -------------------------------------------------------------
-   CResource go(16, "go");
-   CResource done(0, "done");
-   CResource go_token(1, "go_token");
-   CResource done_token(0, "done_token");
+   DDL::CResource go(16, "source");
+   DDL::CResource done(0, "sink");
+
+   DDL::CResource go_token(1, "go_token");
+   DDL::CResource done_token(0, "done_token", &go_token);
 
    // Configure the process
    // --------------------------------------
@@ -85,7 +80,7 @@ main(int argc, char *argv[])
    scb_done.Produce(&done);
 
    // Get access to the sequencer object
-   CSequencer *seq = CSCB::GetSequencer();
+   DDL::CSequencer *seq = DDL::CSCB::GetSequencer();
 
    if (seq) seq->Start();
 

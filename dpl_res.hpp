@@ -23,30 +23,85 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "dpl_log.hpp"
 #include "semaphore.hpp"
 
 #define DPL_RESOURCE_TIMEOUT_DEFAULT 3000 // Miliseconds
 
+namespace DDL {
+
+class CResourceEnvelop {
+public:
+   CResourceEnvelop(unsigned int number) : mPhysicalResources(number) {
+   }
+   ~CResourceEnvelop() {
+   }
+
+private:
+   // Prevent a call to the default constructor. It shoundn't happen. 
+   CResourceEnvelop();
+
+   std::vector<void *> mPhysicalResources;
+};
+
+
 class CResource {
 public:
    CResource() : 
       mSemCount(0), 
       mInitialCount(0),
+      mCurrentIndex(0),
+      mBoundResource((CResource *)0),
+      mPhysicalResource((CResourceEnvelop *)0),
       mName("") {
+      Init(mName);
+      Warn(mInitialCount, mBoundResource);
    }
 
    CResource(unsigned int count) : 
       mSemCount(count),
       mInitialCount(count),
+      mCurrentIndex(0),
+      mBoundResource((CResource *)0),
+      mPhysicalResource((CResourceEnvelop *)0),
       mName("") {
+      Init(mName);
+      Warn(mInitialCount, mBoundResource);
    }
    
    CResource(unsigned int count, std::string name) : 
       mSemCount(count),
       mInitialCount(count),
+      mCurrentIndex(0),
+      mBoundResource((CResource *)0),
+      mPhysicalResource((CResourceEnvelop *)0),
       mName(name) {
+      Init(mName);
+      Warn(mInitialCount, mBoundResource);
+   }
+
+   CResource(unsigned int count, std::string name, CResource *br) : 
+      mSemCount(count),
+      mInitialCount(count),
+      mCurrentIndex(0),
+      mBoundResource(br),
+      mPhysicalResource((CResourceEnvelop *)0),
+      mName(name) {
+      Init(mName);
+      Warn(mInitialCount, mBoundResource);
+   }  
+
+   CResource(unsigned int count, std::string name, CResourceEnvelop *re) : 
+      mSemCount(count),
+      mInitialCount(count),
+      mCurrentIndex(0),
+      mBoundResource((CResource*)0),
+      mPhysicalResource(re),
+      mName(name) {
+      Init(mName);
+      Warn(mInitialCount, mBoundResource);
    }
 
    ~CResource() {
@@ -62,7 +117,7 @@ public:
    bool Acquire() {
       std::chrono::milliseconds duration(DPL_RESOURCE_TIMEOUT_DEFAULT); 
    
-      mIsAcquired = mSemCount.Wait(duration);
+      return (mIsAcquired = mSemCount.Wait(duration));
    }
 
    bool IsAcquired() {
@@ -73,12 +128,55 @@ private:
 
    Semaphore    mSemCount;
    unsigned int mInitialCount;
+   unsigned int mCurrentIndex;
+
+   // Used by logical resources
+   // mBoundResource = 0 for physical
+   // -------------------------------------------------------------------
+   CResource   *mBoundResource;
+
+   // Used by physical resources to track physical resource object indexes
+   // -------------------------------------------------------------------
+   CResourceEnvelop *mPhysicalResource;
 
    std::string  mName;
 
    bool         mIsAcquired;
+   
+   bool         mIsSink;
+   bool         mIsSource;
+
+   void Init(std::string &name) {
+      // If we have a sink
+      mIsSink = false;
+      mIsSource = false;
+      if (name == "sink") {
+	 mIsSink = true;
+      }
+      else if (name == "source") {
+	 mIsSource = true;
+      }
+   }
+
+   void Warn(unsigned int initial_count, CResource *br) {
+      // We've got a physical resource
+      if (initial_count > 0) {
+	 if ((CResource*)0 != br)  {
+	    __log("Physical resource " << mName << " shouldn't have a bound resource"); 
+	 }
+      }
+      // We've got a logical resource
+      else {
+	 if ((CResource *)0 == br) { 
+	    if (!mIsSink) {
+	       __log("Logical resource " << mName << " should have a bound resource");
+	    }
+	 }
+      }
+   }
 };
 
+}
 
 
 #endif
