@@ -114,7 +114,16 @@ void CSCB::EventLoop(CSCB *arg) {
       if (have_all_resources) {
 	 // Execute SCB's core routine
 	 if (arg->CoreFunction) arg->CoreFunction(arg->mDecrement);
-      
+	 
+	 // Update Indexes
+	 {
+	    auto it = arg->mDecrement.begin();
+	    for (;it != arg->mDecrement.end(); 
+		 ++it) {
+	       (*it)->UpdateIndex();
+	    }
+	 }      
+
 	 // Release (Increment) all resources
 	 {
 	    auto it =  arg->mIncrement.begin();

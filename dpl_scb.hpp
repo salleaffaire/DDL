@@ -21,7 +21,7 @@
 #ifndef DPL_SCB_HPP___
 #define DPL_SCB_HPP___
 
-#include <list>
+#include <vector>
 #include <thread>
 #include <string>
 
@@ -42,7 +42,7 @@ public:
    friend class CSequencer;
 
    // Core Function Type
-   typedef void (*CF_t)(std::list<CResource *> &);
+   typedef void (*CF_t)(std::vector<CResource *> &);
 
    CSCB();
 
@@ -74,9 +74,9 @@ private:
    std::thread *mpT;
 
    // When start
-   std::list<CResource *> mDecrement;
+   std::vector<CResource *> mDecrement;
    // When done
-   std::list<CResource *> mIncrement;
+   std::vector<CResource *> mIncrement;
 
    // Custom Core Function
    // -------------------------------------------------------

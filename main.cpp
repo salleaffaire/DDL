@@ -21,20 +21,26 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <list>
 
 #include "dpl.hpp"
 
-void RunGo(std::list<DDL::CResource *> &res) {
+void RunGo(std::vector<DDL::CResource *> &res) {
    std::chrono::milliseconds duration(100);
    std::this_thread::sleep_for(duration);
+   
+   std::cout << "Go Index = " << res[0]->GetIndex() << std::endl;
+   std::cout << "Go Index = " << res[1]->GetIndex() << std::endl;
    
    __log("Go ran once with Res of size " << res.size());
 }
 
-void RunDone(std::list<DDL::CResource *> &res) {
+void RunDone(std::vector<DDL::CResource *> &res) {
    std::chrono::milliseconds duration(200);
    std::this_thread::sleep_for(duration);
-   
+
+   std::cout << "Done Index = " << res[0]->GetIndex() << std::endl; 
+
    __log("Done ran once with Res of size " << res.size());
 }
 
@@ -45,9 +51,11 @@ main(int argc, char *argv[])
    // -------------------------------------------------------------
 #if 1
 
-   // Create phiysical memory locations
+   // Create wrapper for GO_TOKEN physical allocator
    // -------------------------------------------------------------
-   DDL::CResourceEnvelop free_buffer(2);
+   //DDL::CResourceEnvelop *GO_TOKEN_BUFFER = 
+   //   new DDL::BUFFER_WRAPPER<unsigned char>();
+   DDL::BUFFER_WRAPPER<unsigned char> GO_TOKEN_BUFFER; 
 
    // Create the Sequencer Controlled Blocks 
    DDL::CSCB scb_go(0x00, "Go");
@@ -58,10 +66,10 @@ main(int argc, char *argv[])
       
    // Create the resources
    // -------------------------------------------------------------
-   DDL::CResource go(16, "source");
+   DDL::CResource go(8, "source");
    DDL::CResource done(0, "sink");
 
-   DDL::CResource go_token(1, "go_token");
+   DDL::CResource go_token(2, "go_token", &GO_TOKEN_BUFFER);
    DDL::CResource done_token(0, "done_token", &go_token);
 
    // Configure the process
@@ -84,10 +92,15 @@ main(int argc, char *argv[])
 
    if (seq) seq->Start();
 
+   #if 1
    char a = 't';
    while (a != 'f') {
       std::cin >> a;
    }
+   #else
+   std::chrono::milliseconds duration(2000);
+   std::this_thread::sleep_for(duration);
+   #endif
 
    if (seq) seq->StopAndWait();
 

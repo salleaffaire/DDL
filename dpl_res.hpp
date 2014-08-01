@@ -30,47 +30,54 @@
 
 #define DPL_RESOURCE_TIMEOUT_DEFAULT 3000 // Miliseconds
 
+
 namespace DDL {
+
+class CResource;
+class CSCB;
 
 class CResourceEnvelop {
 public:
-   CResourceEnvelop(unsigned int number) : mPhysicalResources(number) {
+   friend class CResource;
+
+   CResourceEnvelop() {
    }
-   ~CResourceEnvelop() {
+   virtual ~CResourceEnvelop() {
+      __log("Deleting resource envelop");
    }
 
 private:
-   // Prevent a call to the default constructor. It shoundn't happen. 
-   CResourceEnvelop();
 
+   virtual void *CreateResource()        = 0;
+   virtual void  DeleteResource(void *p) = 0;
+   
+   void Init(unsigned int number) {
+      mPhysicalResources.resize(number);
+      auto it = mPhysicalResources.begin();
+      for (;it != mPhysicalResources.end();++it) {
+	 *it = CreateResource();
+      }
+   }
+   void Release() {
+      std::cout << "Releasing physical resources" << std::endl;
+      auto it = mPhysicalResources.begin();
+      for (;it != mPhysicalResources.end();++it) {
+	 if (*it != 0) {
+	    DeleteResource(*it);
+	 }
+      }
+   }
+   
    std::vector<void *> mPhysicalResources;
 };
 
 
 class CResource {
 public:
-   CResource() : 
-      mSemCount(0), 
-      mInitialCount(0),
-      mCurrentIndex(0),
-      mBoundResource((CResource *)0),
-      mPhysicalResource((CResourceEnvelop *)0),
-      mName("") {
-      Init(mName);
-      Warn(mInitialCount, mBoundResource);
-   }
+   friend class CSCB;
 
-   CResource(unsigned int count) : 
-      mSemCount(count),
-      mInitialCount(count),
-      mCurrentIndex(0),
-      mBoundResource((CResource *)0),
-      mPhysicalResource((CResourceEnvelop *)0),
-      mName("") {
-      Init(mName);
-      Warn(mInitialCount, mBoundResource);
-   }
-   
+   // Used for "source" and "sink"
+   // 
    CResource(unsigned int count, std::string name) : 
       mSemCount(count),
       mInitialCount(count),
@@ -100,31 +107,30 @@ public:
       mBoundResource((CResource*)0),
       mPhysicalResource(re),
       mName(name) {
+      // Init the resource
       Init(mName);
+      // Create the physical resources
+      re->Init(count);
+      // Call verifier
       Warn(mInitialCount, mBoundResource);
    }
 
    ~CResource() {
+      // Free the physical resources if needed
+      if (mPhysicalResource) {
+	 mPhysicalResource->Release();
+      }
       __log("Deleting " << mName);
    }
 
-   void Release() {
-      mSemCount.Signal();
-   }
-
-   // Returns true if a resource was acquired
-   // returns false if it timed out. 
-   bool Acquire() {
-      std::chrono::milliseconds duration(DPL_RESOURCE_TIMEOUT_DEFAULT); 
-   
-      return (mIsAcquired = mSemCount.Wait(duration));
-   }
-
-   bool IsAcquired() {
-      return mIsAcquired;
+   unsigned int GetIndex() {
+      return mCurrentIndex;
    }
 
 private:
+
+   // Prevent the use of the default constructor
+   CResource() {}
 
    Semaphore    mSemCount;
    unsigned int mInitialCount;
@@ -145,6 +151,32 @@ private:
    
    bool         mIsSink;
    bool         mIsSource;
+
+   // Interface for the SCB
+   // -------------------------------------------------------------------
+   void UpdateIndex() {
+      ++mCurrentIndex;
+      if (mCurrentIndex == mInitialCount) {
+	 mCurrentIndex = 0;
+      }
+   }
+
+   void Release() {
+      mSemCount.Signal();
+   }
+
+   // Returns true if a resource was acquired
+   // returns false if it timed out. 
+   bool Acquire() {
+      std::chrono::milliseconds duration(DPL_RESOURCE_TIMEOUT_DEFAULT); 
+   
+      return (mIsAcquired = mSemCount.Wait(duration));
+   }
+
+   bool IsAcquired() {
+      return mIsAcquired;
+   }
+   // ------------------------------------------------------------------
 
    void Init(std::string &name) {
       // If we have a sink
@@ -175,6 +207,27 @@ private:
       }
    }
 };
+
+template <class T>
+class BUFFER_WRAPPER : public DDL::CResourceEnvelop {
+public:
+   // Inherit constructors
+   using CResourceEnvelop::CResourceEnvelop;
+
+   ~BUFFER_WRAPPER () {}
+
+private:
+   void *CreateResource() {
+      void *p = (void *) new T [1024];
+      std::cout << (unsigned long long) p << std::endl;
+      return p;
+   }
+   void DeleteResource(void *p) {
+      std::cout << (unsigned long long) p << std::endl;
+      delete [] ((T *)p);
+   }
+};
+
 
 }
 
