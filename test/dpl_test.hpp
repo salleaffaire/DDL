@@ -18,14 +18,11 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //    ======================================================================= 
 
-#ifndef DPL_HPP___
-#define DPL_HPP___
+#ifndef DPL_TEST_HPP
+#define DPL_TEST_HPP
 
-#include "dpl_seq.hpp"
-#include "dpl_scb.hpp"
-#include "dpl_res.hpp"
-#include "dpl_log.hpp"
+void DPL_TEST_DUMMY();
+void DPL_TEST_LOWPASSIMAGE();
 
-#define DDL_COREF(_X, _Y) void _X(std::vector<DDL::CResource *> &_Y)
 
 #endif

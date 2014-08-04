@@ -18,14 +18,35 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //    ======================================================================= 
 
-#ifndef DPL_HPP___
-#define DPL_HPP___
+// Include DDL
+#include "dpl.hpp"
 
-#include "dpl_seq.hpp"
-#include "dpl_scb.hpp"
-#include "dpl_res.hpp"
-#include "dpl_log.hpp"
+#define IMAGE_WIDTH  640
+#define IMAGE_HEIGHT 480
 
-#define DDL_COREF(_X, _Y) void _X(std::vector<DDL::CResource *> &_Y)
+// SCB core functions
 
-#endif
+DDL_COREF(CFRead, res) {
+   void *data0 = res[0]->GetData();
+
+}
+
+DDL_COREF(CFLowPass, res) {
+   void *data0 = res[0]->GetData();
+
+}
+
+DDL_COREF(CFWrite, res) {
+   void *data0 = res[0]->GetData();
+
+}
+
+void LowPass_Image {
+   // Read ther image from disk
+   unsigned char *image_data = new unsigned char [IMAGE_WIDTH*IMAGE_HEIGHT];
+ 
+
+   // Write the image to disk
+
+   delete [] image_data;
+}

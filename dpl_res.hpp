@@ -100,6 +100,7 @@ public:
       mBoundResource(br),
       mPhysicalResource((CResourceEnvelop *)0),
       mName(name) {
+      
       // Init the resource
       Init(mName);
       
@@ -135,6 +136,27 @@ public:
 
    unsigned int GetIndex() {
       return mCurrentIndex;
+   }
+
+   void *GetData() {
+      CResource *link = this;
+
+      // While bound - go down to the physical 
+      while (link->mBoundResource) {
+	 link = link->mBoundResource;
+      }
+
+      unsigned int index = GetIndex();
+      void *rval;
+
+      // Protect against pure logical "source" and "sink"
+      if (link->mPhysicalResource) {
+	 rval = link->mPhysicalResource->mPhysicalResources[index];
+      }
+      else {
+	 rval = 0;
+      }
+      return rval;
    }
 
 private:
@@ -202,33 +224,33 @@ private:
 
    void Warn(unsigned int initial_count, CResource *br) {
       // We've got a physical resource
-      if (initial_count > 0) {
-	 if ((CResource*)0 != br)  {
-	    __log("Physical resource " << mName << " shouldn't have a bound resource"); 
-	 }
+      if (mPhysicalResource) {
+
       }
       // We've got a logical resource
-      else {
-	 if ((CResource *)0 == br) { 
-	    if (!mIsSink) {
-	       __log("Logical resource " << mName << " should have a bound resource");
-	    }
-	 }
+      else if (mBoundResource) {
+
       }
    }
 };
 
 template <class T>
-class BUFFER_WRAPPER : public DDL::CResourceEnvelop {
+class BUFFER_ENVELOP : public DDL::CResourceEnvelop {
 public:
    // Inherit constructors
    using CResourceEnvelop::CResourceEnvelop;
 
-   ~BUFFER_WRAPPER () {}
+   BUFFER_ENVELOP(unsigned int size) :
+      DDL::CResourceEnvelop(),
+      mSize(size) {}
+
+   ~BUFFER_ENVELOP () {}
 
 private:
+   unsigned int mSize;
+
    void *CreateResource() {
-      void *p = (void *) new T [1024];
+      void *p = (void *) new T [mSize];
       std::cout << (unsigned long long) p << std::endl;
       return p;
    }
