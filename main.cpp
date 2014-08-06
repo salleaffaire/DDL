@@ -38,11 +38,15 @@ main(int argc, char *argv[])
 #endif
 
    // Low Pass Image
-#if 1
+#if 0
    DPL_TEST_LOWPASSIMAGE();
 
 #endif
    
+   // AES Tree
+#if 1
+   DPL_TEST_AESTREE();
 
+#endif
    return 0;
 }

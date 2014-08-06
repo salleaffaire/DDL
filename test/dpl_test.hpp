@@ -23,6 +23,6 @@
 
 void DPL_TEST_DUMMY();
 void DPL_TEST_LOWPASSIMAGE();
-
+void DPL_TEST_AESTREE();
 
 #endif
