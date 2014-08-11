@@ -74,10 +74,12 @@ int CSCB::StopAndWait() {
 
 void CSCB::WaitOn(CResource *res) {
    mDecrement.push_back(res);
+   mSequencer->RegisterResourceOnWait(res, this);
 }
 
 void CSCB::Produce(CResource *res)  {
    mIncrement.push_back(res);
+   mSequencer->RegisterResourceOnProduce(res, this);
 }
 
 CSequencer *CSCB::GetSequencer() {

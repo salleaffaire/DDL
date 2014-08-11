@@ -22,11 +22,12 @@
 #define __DPL_SEQ__
 
 #include <list>
+#include <map>
 
 namespace DDL {
 
 class CSCB;
-
+class CResource;
 
 class CSequencer {
 public:
@@ -36,13 +37,21 @@ public:
    void RegisterSCB(CSCB *scb);
    void UnregisterSCB(CSCB *scb);
 
+   void RegisterResourceOnWait(CResource *res, CSCB *scb);
+   void RegisterResourceOnProduce(CResource *res, CSCB *scb);
+
    void Start();
    void StopAndWait();
 
    unsigned int GetNumberOfRegisteredResources();
 
 private:
-   std::list<CSCB *> mSCBs;
+   // SCB list
+   std::list<CSCB *>      mSCBs;
+
+   // Resource Maps
+   std::map<CResource *, std::list<CSCB *>> mIsWaitedOnBy;
+   std::map<CResource *, std::list<CSCB *>> mIsProducedBy;
 };
 
 }

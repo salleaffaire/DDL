@@ -40,6 +40,23 @@ void CSequencer::UnregisterSCB(CSCB *scb) {
    mSCBs.remove(scb);
 }
 
+void CSequencer::RegisterResourceOnWait(CResource *res, CSCB *scb) {
+   // If not already in the map
+   if (mIsWaitedOnBy.find(res) == mIsWaitedOnBy.end()) {
+      mIsWaitedOnBy[res] = std::list<CSCB *>(0);
+   }
+   mIsWaitedOnBy[res].push_back(scb);
+
+}
+
+void CSequencer::RegisterResourceOnProduce(CResource *res, CSCB *scb) {
+   // If not already in the map
+   if (mIsProducedBy.find(res) == mIsProducedBy.end()) {
+      mIsProducedBy[res] = std::list<CSCB *>(0);
+   }
+   mIsProducedBy[res].push_back(scb);
+}
+
 unsigned int CSequencer::GetNumberOfRegisteredResources() {
    return mSCBs.size();
 }
